@@ -8,10 +8,34 @@ const router = express.Router();
 // Cache configuration
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 const CACHE_FILE = path.join(__dirname, '../data/pokemon_cache.json');
+const CSV_FILE = path.join(__dirname, '../data/pokemon_data.csv');
 const cache = {
   pokemon: new Map(),
   lastFetch: null
 };
+
+// Function to save data to CSV
+async function saveToCSV(pokemonData) {
+  try {
+    // Create CSV header
+    let csvContent = 'id,name,height,types\n';
+    
+    // Add each pokemon's data
+    for (const [id, pokemon] of pokemonData.entries()) {
+      const types = pokemon.types.join('|'); // Join types with pipe separator
+      csvContent += `${id},${pokemon.name},${pokemon.height},${types}\n`;
+    }
+    
+    // Create data directory if it doesn't exist
+    await fs.mkdir(path.dirname(CSV_FILE), { recursive: true });
+    
+    // Write CSV file
+    await fs.writeFile(CSV_FILE, csvContent);
+    console.log('Data saved to CSV file');
+  } catch (error) {
+    console.error('Error saving CSV:', error);
+  }
+}
 
 // Function to load cache from file
 async function loadCache() {
@@ -43,8 +67,12 @@ async function saveCache() {
       lastFetch: cache.lastFetch
     };
     
+    // Save JSON cache
     await fs.writeFile(CACHE_FILE, JSON.stringify(cacheData, null, 2));
     console.log('Cache saved to file');
+    
+    // Save CSV file
+    await saveToCSV(cache.pokemon);
   } catch (error) {
     console.error('Error saving cache:', error);
   }
