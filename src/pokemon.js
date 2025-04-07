@@ -210,36 +210,6 @@ router.get('/heights', async (req, res) => {
   }
 });
 
-import express from 'express';
-import fs from 'fs';
-import path from 'path';
-
-const app = express();
-const PORT = 3000;
-
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-});
-
-// Function to fetch multiple pokemon
-async function fetchPokemonRange(startId, endId) {
-  const pokemonList = [];
-  
-  for (let id = startId; id <= endId; id++) {
-    console.log(`Fetching pokemon ${id}...`);
-    const pokemon = await fetchPokemon(id);
-    
-    if (pokemon) {
-      pokemonList.push(pokemon);
-    }
-    
-    // Add a small delay to avoid overwhelming the API
-    await new Promise(resolve => setTimeout(resolve, 1000));
-  }
-  
-  return pokemonList;
-}
-
 // Load cache when the module is initialized
 loadCache().catch(console.error);
 
