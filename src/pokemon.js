@@ -189,33 +189,6 @@ import path from 'path';
 const app = express();
 const PORT = 3000;
 
-type Pokemon = {
-  height: number;
-  types: string[];
-};
-
-app.get('/average-heights', (req, res) => {
-  const filePath = path.join(__dirname, 'pokemon_cache.json');
-  const data: Pokemon[] = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-
-  const heightSums: Record<string, number> = {};
-  const typeCounts: Record<string, number> = {};
-
-  data.forEach((pokemon) => {
-    pokemon.types.forEach((type) => {
-      heightSums[type] = (heightSums[type] || 0) + pokemon.height;
-      typeCounts[type] = (typeCounts[type] || 0) + 1;
-    });
-  });
-
-  const averages: Record<string, number> = {};
-  Object.keys(heightSums).forEach((type) => {
-    averages[type] = parseFloat((heightSums[type] / typeCounts[type]).toFixed(3));
-  });
-
-  res.json({ heights: averages });
-});
-
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
@@ -238,54 +211,6 @@ async function fetchPokemonRange(startId, endId) {
   
   return pokemonList;
 }
-
-// Endpoint to fetch pokemon by range
-router.get('/range/:start/:end', async (req, res) => {
-  try {
-    const startId = parseInt(req.params.start);
-    const endId = parseInt(req.params.end);
-    
-    if (isNaN(startId) || isNaN(endId)) {
-      return res.status(400).json({ error: 'Invalid range parameters' });
-    }
-    
-    if (startId > endId) {
-      return res.status(400).json({ error: 'Start ID must be less than or equal to end ID' });
-    }
-    
-    const pokemonList = await fetchPokemonRange(startId, endId);
-    
-    res.json({
-      total: pokemonList.length,
-      pokemon: pokemonList
-    });
-  } catch (error) {
-    console.error('Error fetching pokemon range:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// Endpoint to fetch a single pokemon
-router.get('/:id', async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    
-    if (isNaN(id)) {
-      return res.status(400).json({ error: 'Invalid pokemon ID' });
-    }
-    
-    const pokemon = await fetchPokemon(id);
-    
-    if (!pokemon) {
-      return res.status(404).json({ error: 'Pokemon not found' });
-    }
-    
-    res.json(pokemon);
-  } catch (error) {
-    console.error('Error fetching pokemon:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
 
 // Load cache when the module is initialized
 loadCache().catch(console.error);
